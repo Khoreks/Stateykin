@@ -7,7 +7,7 @@ if __name__ == "__main__":
     from datetime import datetime
 
     try:
-        df = pd.read_csv('./result.csv', index_col="Unnamed: 0")
+        df = pd.read_csv(f'./result_{settings.MODEL_PATH.split("/")[-1].split(".")[0]}.csv', index_col="Unnamed: 0")
     except FileNotFoundError:
         df = pd.DataFrame()
 

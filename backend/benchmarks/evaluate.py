@@ -17,9 +17,9 @@ langchain_llm = ChatOllama(model="gemma2")
 langchain_embeddings = OllamaEmbeddings(model="gemma2")
 
 try:
-    main = pd.read_csv("./main.csv")
-except:
-    main = pd.DataFrame(
+    metrics = pd.read_csv("./metrics.csv")
+except FileNotFoundError:
+    metrics = pd.DataFrame(
         columns=["idx", "context_precision", "faithfulness", "answer_relevancy", "context_recall", "model"])
 
 
@@ -56,5 +56,5 @@ for model_result in ["result_saiga-llama-3-8b", "result_gemma-2-9b-it", "result_
             r = dict(r)
         r["model"] = model
         r["idx"] = idx
-        main = pd.concat([main, pd.DataFrame([r])], axis=0)
-        main.to_csv('./main.csv', index=False)
+        metrics = pd.concat([metrics, pd.DataFrame([r])], axis=0)
+        metrics.to_csv('./metrics.csv', index=False)
