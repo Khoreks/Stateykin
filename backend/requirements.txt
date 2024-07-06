@@ -1,0 +1,7 @@
+python-dotenv==1.0.0
+langgraph
+langchain_core
+langchain_community
+pandas
+httpx
+duckduckgo-search
