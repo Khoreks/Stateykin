@@ -1,4 +1,3 @@
 # Stateykin
-develop status - baseline
-* Метрики  
-![Метрики](images/metrics.png)
+
+Jupyter notebooks branch
