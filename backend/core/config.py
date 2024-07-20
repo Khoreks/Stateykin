@@ -25,4 +25,9 @@ class Settings:
 
     web_max_results: int = os.getenv("web_max_results")
 
+    chunk_size: int = int(os.getenv("chunk_size"))
+    chunk_overlap: int = int(os.getenv("chunk_overlap"))
+    chunk_max_words: int = int(os.getenv("chunk_max_words"))
+
+
 settings = Settings()

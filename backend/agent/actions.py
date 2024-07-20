@@ -1,12 +1,14 @@
 from langchain_core.output_parsers import JsonOutputParser, StrOutputParser
 
 from .search import web_search_tool
+from .summarization import query_summarization
 from .llm import model as llm
 from .prompt import *
 
-extraction_chain = extract_prompt | llm | JsonOutputParser()
-search_chain = search_prompt | llm | JsonOutputParser()
-generate_chain = generate_prompt | llm | StrOutputParser()
+information_extraction_chain = extraction_prompt | llm | JsonOutputParser()
+request_generation_chain = web_request_generation_prompt | llm | JsonOutputParser()
+web_page_summarization_chain = web_page_summarization_prompt | llm | StrOutputParser()
+post_generation_chain = post_generate_prompt | llm | StrOutputParser()
 
 
 def extraction_information(state):
@@ -18,7 +20,7 @@ def extraction_information(state):
         "end_header": state["end_header"],
         "end_message": state["end_message"]
     }
-    request = extraction_chain.invoke(input_dict)
+    request = information_extraction_chain.invoke(input_dict)
     # print(request)
     return {
         "topic": request["Тема"],
@@ -40,18 +42,45 @@ def generate_search_request(state):
         "end_header": state["end_header"],
         "end_message": state["end_message"]
     }
-    request = search_chain.invoke(input_dict)
-    # print(request)
-    return {"search_query": request["query"]}
+    request = request_generation_chain.invoke(input_dict)
+    print(request)
+    return {
+        "web_search_queries": request["queries"]
+    }
 
 
 def web_search(state):
-    search_query = state['search_query']
-    print(f'Step: Searching the Web for: "{search_query}"')
+    # web_search_queries = state['web_search_queries']
+    input_dict = {
+        'web_search_queries': state['web_search_queries']
+    }
+    print(f'Step: Searching the Web for: {state["web_search_queries"]}')
+    # print(web_search_queries, type(web_search_queries))
+    search_results = web_search_tool.invoke(input_dict)
 
-    search_result = web_search_tool.invoke(search_query)
+    print(f"{len(search_results)=}")
     # print(f"{search_result=}")
-    return {"context": search_result}
+    return {
+        "web_pages": search_results
+    }
+
+
+def summarization_web_page(state):
+    print("Step: Generate Query for Web Search")
+    input_dict = {
+        "topic": state["topic"],
+        "first_token": state["first_token"],
+        "start_header": state["start_header"],
+        "end_header": state["end_header"],
+        "end_message": state["end_message"]
+    }
+    context = []
+    for query_pages in state["web_pages"]:
+        context.append(query_summarization(input_dict, query_pages, web_page_summarization_chain))
+
+    return {
+        "context": "\n".join(context)
+    }
 
 
 def generate(state):
@@ -67,5 +96,5 @@ def generate(state):
         "end_header": state["end_header"],
         "end_message": state["end_message"]
     }
-    generation = generate_chain.invoke(input_dict)
+    generation = post_generation_chain.invoke(input_dict)
     return {"generation": generation}
